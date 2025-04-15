@@ -9,9 +9,7 @@ pub fn build(b: *std.Build) !void {
     // Get the target
     const is_wasm = target.result.cpu.arch.isWasm();
 
-    // Native build (non-WebAssembly)
     if (!is_wasm) {
-        // Add executable
         const exe = b.addExecutable(.{
             .name = "impossible-day",
             .root_source_file = b.path("src/main.zig"),
@@ -44,13 +42,11 @@ pub fn build(b: *std.Build) !void {
     }
     // WebAssembly build
     else {
-        // Create the WebAssembly build step
         const wasm_step = b.step(
             "wasm",
             "Build for WebAssembly",
         );
 
-        // Add library for wasm
         const exe_lib = b.addStaticLibrary(.{
             .name = "impossible-day",
             .root_source_file = b.path("src/main.zig"),
@@ -58,7 +54,7 @@ pub fn build(b: *std.Build) !void {
             .optimize = optimize,
         });
 
-        // Add raylib as a dependency with wasm options
+        // raylib
         const raylib_dep = b.dependency("raylib_zig", .{
             .target = target,
             .optimize = optimize,
@@ -66,9 +62,25 @@ pub fn build(b: *std.Build) !void {
         const raylib = raylib_dep.module("raylib");
         const raylib_artifact = raylib_dep.artifact("raylib");
 
-        // Add raylib to our application
         exe_lib.root_module.addImport("raylib", raylib);
         exe_lib.linkLibrary(raylib_artifact);
+
+        // Chipmunk2D
+        const chipmunk = b.addStaticLibrary(.{
+            .name = "chipmunk",
+            .target = target,
+            .optimize = optimize,
+        });
+
+        // Path to the Chipmunk2D library
+        const chipmunk_path = "Chipmunk2D-master";
+        chipmunk.addIncludePath(b.path(b.pathJoin(&.{ chipmunk_path, "include" })));
+        chipmunk.linkLibC();
+
+        // Add Chipmunk to exe_lib
+        exe_lib.addIncludePath(b.path(b.pathJoin(&.{ chipmunk_path, "include" })));
+        exe_lib.linkLibrary(chipmunk);
+        exe_lib.linkLibC();
 
         // Link everything with emscripten
         const link_step = try rlz.emcc.linkWithEmscripten(
@@ -76,7 +88,7 @@ pub fn build(b: *std.Build) !void {
             &[_]*std.Build.Step.Compile{ exe_lib, raylib_artifact },
         );
 
-        // Add emscripten flags with more verbose debug options
+        // Add emscripten flags
         link_step.addArg("-sASYNCIFY");
         link_step.addArg("-sUSE_GLFW=3");
         link_step.addArg("-sSINGLE_FILE=1");
