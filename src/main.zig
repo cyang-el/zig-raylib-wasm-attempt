@@ -3,8 +3,8 @@ const rl = @import("raylib");
 
 pub fn main() !void {
     // Initialize window
-    const screenWidth = 1600;
-    const screenHeight = 1000;
+    const screenWidth = 1000;
+    const screenHeight = 750;
     rl.initWindow(screenWidth, screenHeight, "impossible-day");
     defer rl.closeWindow();
 

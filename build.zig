@@ -76,13 +76,19 @@ pub fn build(b: *std.Build) !void {
             &[_]*std.Build.Step.Compile{ exe_lib, raylib_artifact },
         );
 
-        // Add emscripten flags
+        // Add emscripten flags with more verbose debug options
         link_step.addArg("-sASYNCIFY");
         link_step.addArg("-sUSE_GLFW=3");
         link_step.addArg("-sSINGLE_FILE=1");
         link_step.addArg("-sINITIAL_MEMORY=67108864"); // 64MB
         link_step.addArg("-sALLOW_MEMORY_GROWTH=1");
         link_step.addArg("-sEXPORTED_RUNTIME_METHODS=ccall,cwrap");
+        link_step.addArg("-sFORCE_FILESYSTEM=1");
+        link_step.addArg("-o"); // Output file name
+        link_step.addArg("impossible-day.html"); // Set the HTML file name
+
+        // Make sure to use our custom shell file
+        link_step.addArg("--shell-file=shell.html");
 
         wasm_step.dependOn(&link_step.step);
     }
