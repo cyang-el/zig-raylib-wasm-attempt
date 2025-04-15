@@ -45,7 +45,10 @@ pub fn build(b: *std.Build) !void {
     // WebAssembly build
     else {
         // Create the WebAssembly build step
-        const wasm_step = b.step("wasm", "Build for WebAssembly");
+        const wasm_step = b.step(
+            "wasm",
+            "Build for WebAssembly",
+        );
 
         // Add library for wasm
         const exe_lib = b.addStaticLibrary(.{
