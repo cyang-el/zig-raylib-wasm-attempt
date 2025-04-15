@@ -1,0 +1,56 @@
+# Zig build artifacts
+zig-cache/
+zig-out/
+build/
+build-*/
+
+# WebAssembly/Emscripten output
+*.wasm
+*.js
+*.html.mem
+*.data
+*.html
+!shell_minimal.html
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux files
+*~
+.directory
+.Trash-*
+
+# Windows files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Debug files
+*.pdb
+*.dSYM/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules (if using npm for web serving)
+node_modules/
+
+# Custom environment files
+.env
+
+# Emscripten SDK files (if local)
+emsdk/
+raylib-zig-devel/
