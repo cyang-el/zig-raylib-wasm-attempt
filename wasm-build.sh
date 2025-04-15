@@ -3,7 +3,7 @@
 # Make sure we're in the project root directory
 cd "$(dirname "$0")"
 
-# Create a container-based shell.html template for emscripten
+# Create a standard shell.html for the build process
 cat > shell.html << 'EOL'
 <!DOCTYPE html>
 <html>
@@ -70,10 +70,61 @@ echo "Using shell file at: $SHELL_PATH"
 
 zig build wasm -Dtarget=wasm32-emscripten --sysroot "/home/cy/emsdk/upstream/emscripten" -- "--shell-file=$SHELL_PATH"
 
-# Clean up and move to output directory
-mv *.html zig-out/htmlout/index.html 2>/dev/null || true
-mv *.js zig-out/htmlout/ 2>/dev/null || true
-mv *.wasm zig-out/htmlout/ 2>/dev/null || true
+# Move generated files to output directory
+# mv *.html zig-out/htmlout/index.html 2>/dev/null || true
+# mv *.js zig-out/htmlout/ 2>/dev/null || true
+# mv *.wasm zig-out/htmlout/ 2>/dev/null || true
 
-echo "Build complete. Files moved to zig-out/htmlout/"
-echo "The app is now in a container div that can be embedded in other HTML pages."
+# Create an org-mode compatible HTML snippet
+cat > org-embed.html << 'EOL'
+<!-- Begin Embedded WASM App -->
+<style>
+.wasm-app-container {
+    width: 800px;
+    height: 600px;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    background-color: black;
+    border: 1px solid #333;
+}
+.wasm-app-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+</style>
+
+<div class="wasm-app-container">
+    <canvas class="wasm-app-canvas" id="impossibleDayCanvas" oncontextmenu="event.preventDefault()"></canvas>
+</div>
+
+<script>
+    // Only initialize if not already initialized
+    if (typeof window.impossibleDayInitialized === 'undefined') {
+        window.impossibleDayInitialized = true;
+
+        // Load the JavaScript module for the app
+        var script = document.createElement('script');
+        script.src = "impossible-day.js";
+        script.onload = function() {
+            var Module = {
+                canvas: document.getElementById('impossibleDayCanvas'),
+                onRuntimeInitialized: function() {
+                    document.getElementById('impossibleDayCanvas').focus();
+                }
+            };
+        };
+        document.body.appendChild(script);
+    }
+</script>
+<!-- End Embedded WASM App -->
+EOL
+
+echo "Created org-mode compatible HTML snippet"
+echo "To use in org-mode, copy the contents of org-embed.html into a #+BEGIN_EXPORT html ... #+END_EXPORT block"
+echo "Make sure to also copy the impossible-day.js and *.wasm files to your website's assets directory"
